@@ -107,7 +107,7 @@ GearGuard is a comprehensive maintenance management system that leverages **Mach
 
 ## Author
 
-**Your Name**  
+**Neel Gundale**  
 - LinkedIn: [https://www.linkedin.com/in/neelgundale16/](#)
 - Email: neelgundale@gmail.com
 
