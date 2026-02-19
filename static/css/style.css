@@ -1,0 +1,20 @@
+body {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.badge.bg-low { background-color: #28a745 !important; }
+.badge.bg-medium { background-color: #ffc107 !important; }
+.badge.bg-high { background-color: #fd7e14 !important; }
+.badge.bg-critical { background-color: #dc3545 !important; }
