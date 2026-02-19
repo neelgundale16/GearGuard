@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GearGuard{% endblock %}</title>
+    
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <style>
+       
+    :root {
+        /* Industrial Color Palette */
+        --primary: #FF6B35;           /* Industrial Orange */
+        --primary-dark: #E55A2B;
+        --secondary: #2C3E50;         /* Dark Charcoal */
+        --accent: #F7931E;            /* Amber Gold */
+        --success: #27AE60;           /* Industrial Green */
+        --danger: #E74C3C;            /* Alert Red */
+        --warning: #F39C12;           /* Caution Yellow */
+        --dark: #1A252F;              /* Deep Charcoal */
+        --light: #ECF0F1;             /* Light Gray */
+        --gray: #95A5A6;              /* Medium Gray */
+        --text-dark: #2C3E50;
+        --text-light: #7F8C8D;
+    }
+    
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    body {
+        background: var(--light);
+        min-height: 100vh;
+        color: var(--text-dark);
+    }
+    
+    /* Modern Industrial Navbar */
+    .navbar {
+        background: var(--secondary) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        padding: 1rem 0;
+        border-bottom: 3px solid var(--primary);
+    }
+    
+    .navbar-brand {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: white !important;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .nav-link {
+        color: rgba(255,255,255,0.85) !important;
+        font-weight: 500;
+        padding: 0.5rem 1rem !important;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+    
+    .nav-link:hover {
+        background: rgba(255,107,53,0.1);
+        color: var(--primary) !important;
+    }
+    
+    /* Cards */
+    .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        transition: all 0.2s;
+        margin-bottom: 1.5rem;
+        background: white;
+    }
+    
+    .card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        transform: translateY(-1px);
+    }
+    
+    .card-header {
+        background: white;
+        border-bottom: 2px solid var(--light);
+        padding: 1.25rem 1.5rem;
+        border-radius: 8px 8px 0 0 !important;
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--text-dark);
+    }
+    
+    /* Buttons */
+   .btn {
+    border-radius: 6px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: none;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+        }
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255,107,53,0.25);
+    }
+    
+    .btn-outline-primary {
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        background: white;
+    }
+    
+    .btn-outline-primary:hover {
+        background: var(--primary);
+        color: white;
+    }
+    
+    /* Stat Cards - Industrial Theme */
+    .stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        border-left: 4px solid var(--primary);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        background: var(--light);
+        color: var(--primary);
+    }
+    
+    /* Badges */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+    
+    .badge.bg-warning {
+        background: var(--accent) !important;
+        color: white;
+    }
+    
+    /* Progress bars */
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        background: var(--light);
+    }
+    
+    .progress-bar {
+        border-radius: 4px;
+        background: var(--primary);
+    }
+    
+    /* Tables */
+    .table {
+        border-spacing: 0 0.5rem;
+    }
+    
+    .table thead th {
+        border: none;
+        color: var(--text-light);
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        background: var(--light);
+    }
+    
+    .table tbody tr {
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border: none;
+    }
+    
+    /* Alerts */
+    .alert {
+        border-radius: 6px;
+        border: none;
+        border-left: 4px solid;
+    }
+    
+    .alert-info {
+        background: #E8F4F8;
+        border-left-color: var(--primary);
+        color: var(--text-dark);
+    }
+    
+    .alert-warning {
+        background: #FFF3E0;
+        border-left-color: var(--accent);
+        color: var(--text-dark);
+    }
+    
+    .alert-success {
+        background: #E8F5E9;
+        border-left-color: var(--success);
+        color: var(--text-dark);
+    }
+    
+    /* Live indicator */
+    .live-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .live-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--success);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    /* Remove any blue/purple */
+    .bg-primary {
+        background-color: var(--primary) !important;
+    }
+    
+    .text-primary {
+        color: var(--primary) !important;
+    }
+    
+    .bg-info {
+        background-color: var(--secondary) !important;
+    }
+
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <!-- Modern Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'maintenance:dashboard' %}">
+                <i class="fas fa-robot"></i> GearGuard 
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'maintenance:dashboard' %}">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'maintenance:ml_dashboard' %}">
+                            <i class="fas fa-brain"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'maintenance:equipment_list' %}">
+                            <i class="fas fa-cog"></i> Equipment
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'maintenance:request_list' %}">
+                            <i class="fas fa-clipboard-list"></i> Requests
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'maintenance:calendar' %}">
+                            <i class="fas fa-calendar"></i> Calendar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'maintenance:kanban' %}">
+                            <i class="fas fa-columns"></i> Kanban
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <span class="badge bg-warning">
+                                <i class="fas fa-crown"></i> Admin
+                            </span>
+                        </span>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="border-radius: 12px; border: none;">
+            <strong><i class="fas fa-check-circle"></i></strong> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 mt-5" style="background: white; border-top: 1px solid #e5e7eb;">
+        <div class="container">
+            <p class="mb-0" style="color: #6b7280;">
+                &copy; GearGuard 2026
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Real-time Updates Script -->
+    <script>
+        // Auto-refresh data every 30 seconds
+        let autoRefreshEnabled = false;
+        
+        function enableAutoRefresh() {
+            if (!autoRefreshEnabled) {
+                autoRefreshEnabled = true;
+                setInterval(function() {
+                    // Only refresh if page is visible
+                    if (!document.hidden) {
+                        location.reload();
+                    }
+                }, 30000); // 30 seconds
+            }
+        }
+        
+        // Live indicator pulse
+        document.addEventListener('DOMContentLoaded', function() {
+            const liveIndicators = document.querySelectorAll('.live-indicator');
+            if (liveIndicators.length > 0) {
+                enableAutoRefresh();
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+
+<script>
+// Broadcast changes to other tabs
+window.addEventListener('storage', function(e) {
+    if (e.key === 'data_updated') {
+        location.reload();
+    }
+});
+
+// When user makes a change
+function notifyDataChange() {
+    localStorage.setItem('data_updated', Date.now());
+}
+</script>
