@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between mb-4">
+        <h1>Equipment</h1>
+        <a href="{% url 'maintenance:equipment_create' %}" class="btn btn-primary">
+            Add Equipment
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Work Center</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for equipment in equipment_list %}
+                    <tr>
+                        <td>{{ equipment.equipment_id }}</td>
+                        <td>{{ equipment.name }}</td>
+                        <td>{{ equipment.work_center.name }}</td>
+                        <td><span class="badge bg-success">{{ equipment.get_status_display }}</span></td>
+                        <td>
+                            <a href="{% url 'maintenance:equipment_detail' equipment.id %}" class="btn btn-sm btn-info">View</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No equipment found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
