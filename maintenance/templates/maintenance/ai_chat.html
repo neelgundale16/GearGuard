@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card" style="height: 80vh;">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot"></i> AI Maintenance Assistant
+                        <span class="badge bg-success ms-2">
+                            <span class="live-dot" style="background: white;"></span> Online
+                        </span>
+                    </h5>
+                    <small>Powered by GPT-4 & RAG</small>
+                </div>
+                <div class="card-body" id="chat-container" style="overflow-y: scroll; height: calc(100% - 120px);">
+                    <!-- Chat messages here -->
+                    <div class="alert alert-info" style="border-radius: 12px;">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>AI Assistant Ready!</strong><br>
+                        Ask me anything about maintenance, equipment failures, or historical issues.
+                    </div>
+                    
+                    <!-- Example messages -->
+                    <div id="messages"></div>
+                </div>
+                <div class="card-footer">
+                    <div class="input-group">
+                        <input type="text" id="user-input" class="form-control" 
+                               placeholder="Ask: Why did Pump A1 fail? How to prevent motor burnout?" 
+                               style="border-radius: 10px 0 0 10px; border: 2px solid #e5e7eb;">
+                        <button class="btn btn-primary" onclick="sendMessage()" style="border-radius: 0 10px 10px 0;">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt"></i> Your data is secure. AI responses based on your maintenance history.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    const messagesDiv = document.getElementById('messages');
+    
+    // Add user message
+    messagesDiv.innerHTML += `
+        <div class="text-end mb-3">
+            <div class="d-inline-block p-3" style="background: #667eea; color: white; border-radius: 12px 12px 0 12px; max-width: 70%;">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    input.value = '';
+    
+    // Add loading
+    messagesDiv.innerHTML += `
+        <div class="mb-3" id="loading">
+            <div class="d-inline-block p-3" style="background: #f3f4f6; border-radius: 12px 12px 12px 0; max-width: 70%;">
+                <i class="fas fa-circle-notch fa-spin"></i> AI is thinking...
+            </div>
+        </div>
+    `;
+    
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    
+    // Call AI API (simulated for now)
+    setTimeout(() => {
+        document.getElementById('loading').remove();
+        
+        messagesDiv.innerHTML += `
+            <div class="mb-3">
+                <div class="d-inline-block p-3" style="background: #f3f4f6; border-radius: 12px 12px 12px 0; max-width: 70%;">
+                    <strong><i class="fas fa-robot text-primary"></i> AI Assistant:</strong><br>
+                    Based on historical data, Pump A1 likely failed due to bearing wear. 
+                    I found 3 similar cases in your maintenance history. 
+                    Recommended action: Replace bearings and check lubrication system.
+                    <br><br>
+                    <small class="text-muted">
+                        <i class="fas fa-database"></i> Analyzed 247 maintenance records
+                    </small>
+                </div>
+            </div>
+        `;
+        
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }, 1500);
+}
+
+// Enter key to send
+document.getElementById('user-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+</script>
+{% endblock %}
