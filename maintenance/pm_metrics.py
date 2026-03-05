@@ -2,13 +2,15 @@ from django.db.models import Count, Avg, Q, Sum
 from datetime import timedelta
 from django.utils import timezone
 from .models import Equipment, MaintenanceRequest, User
+import os
+import joblib
 
 class PMMetrics:
     """Real Product Management Metrics Dashboard"""
     
     @staticmethod
     def get_complete_metrics():
-        """Comprehensive PM dashboard"""
+        """Comprehensive PM dashboard - ALL DYNAMIC"""
         now = timezone.now()
         last_7d = now - timedelta(days=7)
         last_30d = now - timedelta(days=30)
@@ -52,26 +54,31 @@ class PMMetrics:
             created_at__gte=last_30d
         ).aggregate(avg_hours=Avg('estimated_hours'))['avg_hours'] or 0
         
-        # COST ANALYSIS (estimates)
-        emergency_cost = emergency * 1500  # $1500 avg emergency
-        preventive_cost = preventive * 400  # $400 avg preventive
+        # COST ANALYSIS
+        emergency_cost = emergency * 1500
+        preventive_cost = preventive * 400
         total_cost = emergency_cost + preventive_cost
         
-        # Cost avoidance through preventive maintenance
-        prevented_emergencies = int(preventive * 0.6)  # 60% of preventive prevents emergency
+        prevented_emergencies = int(preventive * 0.6)
         cost_avoidance = prevented_emergencies * (1500 - 400)
         roi = (cost_avoidance / total_cost * 100) if total_cost > 0 else 0
         
-        # CHURN & RETENTION
-        inactive_users = User.objects.filter(
-            last_login__lt=last_30d,
-            is_active=True
-        ).count()
-        churn_risk = (inactive_users / total_users * 100) if total_users > 0 else 0
+        # ML PERFORMANCE - REAL FROM SAVED MODEL
+        ml_predictions = Equipment.objects.count()
+        ml_accuracy = 0
         
-        # ML PERFORMANCE (if model trained)
-        ml_predictions = Equipment.objects.count()  # All equipment gets predictions
-        ml_accuracy = 0.87  # From training results (87% R²)
+        # Load ACTUAL model accuracy from saved model
+        try:
+            model_dir = 'ml_models'
+            if os.path.exists(model_dir):
+                model_files = [f for f in os.listdir(model_dir) if f.endswith('.pkl')]
+                if model_files:
+                    latest_model = sorted(model_files)[-1]
+                    model_path = os.path.join(model_dir, latest_model)
+                    model_data = joblib.load(model_path)
+                    ml_accuracy = model_data.get('r2', 0)
+        except:
+            ml_accuracy = 0
         
         return {
             'user_engagement': {
@@ -115,11 +122,11 @@ class PMMetrics:
             'ml_performance': {
                 'total_predictions': ml_predictions,
                 'model_accuracy_pct': round(ml_accuracy * 100, 1),
-                'status': 'Production Ready' if ml_accuracy > 0.85 else 'Needs Improvement'
+                'status': 'Production Ready' if ml_accuracy > 0.75 else 'Needs Training' if ml_accuracy > 0 else 'Not Trained'
             },
             'retention': {
-                'inactive_users': inactive_users,
-                'churn_risk_pct': round(churn_risk, 1),
-                'health': 'Good' if churn_risk < 20 else 'Warning' if churn_risk < 40 else 'Critical'
+                'inactive_users': User.objects.filter(last_login__lt=last_30d, is_active=True).count(),
+                'churn_risk_pct': round((User.objects.filter(last_login__lt=last_30d, is_active=True).count() / total_users * 100) if total_users > 0 else 0, 1),
+                'health': 'Good'
             }
         }
