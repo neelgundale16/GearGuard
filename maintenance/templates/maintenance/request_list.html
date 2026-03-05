@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between mb-4">
+        <h1>Maintenance Requests</h1>
+        <a href="{% url 'maintenance:request_create' %}" class="btn btn-primary">
+             New Request
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Equipment</th>
+                        <th>Title</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in maintenance_requests %}
+                    <tr>
+                        <td>{{ request.equipment.name }}</td>
+                        <td>{{ request.title }}</td>
+                        <td><span class="badge bg-{{ request.priority }}">{{ request.get_priority_display }}</span></td>
+                        <td><span class="badge bg-secondary">{{ request.get_status_display }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No requests found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
