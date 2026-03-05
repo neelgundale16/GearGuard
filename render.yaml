@@ -2,7 +2,6 @@ services:
   - type: web
     name: gearguard-app
     env: python
-    runtime: python-3.11.8
     plan: free
     buildCommand: |
       pip install --upgrade pip
@@ -11,6 +10,8 @@ services:
       python manage.py migrate
     startCommand: gunicorn gearguard_project.wsgi:application
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.8
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
