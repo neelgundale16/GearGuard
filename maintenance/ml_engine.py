@@ -66,7 +66,7 @@ class RealMLEngine:
             if not days_between:
                 continue
             
-            age_days = (timezone.now().date() - equipment.purchase_date).days if equipment.purchase_date else 365
+            age_days = (timezone.now() - equipment.purchase_date).days if equipment.purchase_date else 365
             days_since_last = (timezone.now() - completed_records[-1].created_at).days
             maintenance_count = len(completed_records)
             avg_days_between = np.mean(days_between)
@@ -191,7 +191,7 @@ class RealMLEngine:
             return None
     
     def predict(self, equipment):
-        """Make prediction for single equipment"""
+        """Make prediction for single equipment - FIXED 0 DAYS BUG"""
         model_data = self.load_latest_model()
         if not model_data:
             return None
@@ -211,7 +211,7 @@ class RealMLEngine:
                 delta = (completed_records[i].created_at - completed_records[i-1].created_at).days
                 days_between.append(delta)
             
-            age_days = (timezone.now().date() - equipment.purchase_date).days if equipment.purchase_date else 365
+            age_days = (timezone.now() - equipment.purchase_date).days if equipment.purchase_date else 365
             days_since_last = (timezone.now() - completed_records[-1].created_at).days
             maintenance_count = len(completed_records)
             avg_days_between = np.mean(days_between)
@@ -235,13 +235,26 @@ class RealMLEngine:
             feature_scaled = model_data['scaler'].transform(feature_vector)
             prediction = model_data['model'].predict(feature_scaled)[0]
             
-            days_until = max(0, prediction - days_since_last)
-            priority_score = max(0, min(100, 100 - (days_until / 30 * 100)))
+            # FIX THE 0 DAYS BUG - prediction is the INTERVAL, not the absolute days
+            # We need to calculate: when is NEXT maintenance due?
+            # Next maintenance = days_since_last_maintenance compared to predicted_interval
+            
+            if days_since_last >= prediction:
+                # OVERDUE - maintenance should have happened already
+                days_until = 0
+                priority_score = 100
+            else:
+                # NOT DUE YET - calculate remaining days
+                days_until = int(prediction - days_since_last)
+                # Priority score based on how close we are to the predicted interval
+                priority_score = int((days_since_last / prediction) * 100)
+                priority_score = max(0, min(100, priority_score))
             
             return {
-                'days_until_maintenance': int(days_until),
-                'priority_score': int(priority_score),
-                'confidence': model_data['r2'] * 100
+                'days_until_maintenance': days_until,
+                'priority_score': priority_score,
+                'confidence': model_data['r2'] * 100,
+                'predicted_interval': int(prediction)
             }
             
         except Exception as e:
