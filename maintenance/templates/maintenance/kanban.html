@@ -1,60 +1,127 @@
 {% extends 'base.html' %}
 
+{% block title %}Kanban Board - GearGuard{% endblock %}
+
 {% block content %}
 <div class="container-fluid mt-4">
-    <h1>Kanban Board</h1>
+    <h1 class="mb-4" style="font-weight: 700; color: #2C3E50;">
+        <i class="fas fa-columns"></i> Kanban Board
+    </h1>
     
     <div class="row">
+        <!-- Pending Column -->
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header bg-warning">Pending</div>
-                <div class="card-body">
-                    {% for request in pending %}
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <h6>{{ request.title }}</h6>
-                            <small>{{ request.equipment.name }}</small>
+                <div class="card-header text-white" style="background: #F39C12; font-weight: 600;">
+                    <i class="fas fa-clock"></i> Pending ({{ pending.count }})
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    {% if pending %}
+                        {% for request in pending %}
+                        <div class="card mb-3" style="border-left: 4px solid #F39C12;">
+                            <div class="card-body">
+                                <h6 class="card-title" style="font-weight: 600; color: #2C3E50;">
+                                    {{ request.title }}
+                                </h6>
+                                <p class="card-text mb-2" style="font-size: 0.9rem; color: #6b7280;">
+                                    <i class="fas fa-cog"></i> {{ request.equipment.name }}
+                                </p>
+                                {% if request.priority == 'critical' %}
+                                    <span class="badge" style="background: #E74C3C;">Critical</span>
+                                {% elif request.priority == 'high' %}
+                                    <span class="badge" style="background: #F39C12;">High</span>
+                                {% elif request.priority == 'medium' %}
+                                    <span class="badge" style="background: #3498DB;">Medium</span>
+                                {% else %}
+                                    <span class="badge" style="background: #27AE60;">Low</span>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    {% empty %}
-                    <p class="text-muted">No pending requests</p>
-                    {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-5">
+                            <i class="fas fa-inbox" style="font-size: 3rem; opacity: 0.3;"></i><br>
+                            No pending requests
+                        </p>
+                    {% endif %}
                 </div>
             </div>
         </div>
         
+        <!-- In Progress Column -->
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header bg-info">In Progress</div>
-                <div class="card-body">
-                    {% for request in in_progress %}
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <h6>{{ request.title }}</h6>
-                            <small>{{ request.equipment.name }}</small>
+                <div class="card-header text-white" style="background: #3498DB; font-weight: 600;">
+                    <i class="fas fa-sync fa-spin"></i> In Progress ({{ in_progress.count }})
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    {% if in_progress %}
+                        {% for request in in_progress %}
+                        <div class="card mb-3" style="border-left: 4px solid #3498DB;">
+                            <div class="card-body">
+                                <h6 class="card-title" style="font-weight: 600; color: #2C3E50;">
+                                    {{ request.title }}
+                                </h6>
+                                <p class="card-text mb-2" style="font-size: 0.9rem; color: #6b7280;">
+                                    <i class="fas fa-cog"></i> {{ request.equipment.name }}
+                                </p>
+                                {% if request.priority == 'critical' %}
+                                    <span class="badge" style="background: #E74C3C;">Critical</span>
+                                {% elif request.priority == 'high' %}
+                                    <span class="badge" style="background: #F39C12;">High</span>
+                                {% elif request.priority == 'medium' %}
+                                    <span class="badge" style="background: #3498DB;">Medium</span>
+                                {% else %}
+                                    <span class="badge" style="background: #27AE60;">Low</span>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    {% empty %}
-                    <p class="text-muted">No in-progress requests</p>
-                    {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-5">
+                            <i class="fas fa-inbox" style="font-size: 3rem; opacity: 0.3;"></i><br>
+                            No in-progress requests
+                        </p>
+                    {% endif %}
                 </div>
             </div>
         </div>
         
+        <!-- Completed Column -->
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header bg-success">Completed</div>
-                <div class="card-body">
-                    {% for request in completed %}
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <h6>{{ request.title }}</h6>
-                            <small>{{ request.equipment.name }}</small>
+                <div class="card-header text-white" style="background: #27AE60; font-weight: 600;">
+                    <i class="fas fa-check-circle"></i> Completed ({{ completed.count }})
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    {% if completed %}
+                        {% for request in completed %}
+                        <div class="card mb-3" style="border-left: 4px solid #27AE60;">
+                            <div class="card-body">
+                                <h6 class="card-title" style="font-weight: 600; color: #2C3E50;">
+                                    {{ request.title }}
+                                </h6>
+                                <p class="card-text mb-2" style="font-size: 0.9rem; color: #6b7280;">
+                                    <i class="fas fa-cog"></i> {{ request.equipment.name }}
+                                </p>
+                                {% if request.priority == 'critical' %}
+                                    <span class="badge" style="background: #E74C3C;">Critical</span>
+                                {% elif request.priority == 'high' %}
+                                    <span class="badge" style="background: #F39C12;">High</span>
+                                {% elif request.priority == 'medium' %}
+                                    <span class="badge" style="background: #3498DB;">Medium</span>
+                                {% else %}
+                                    <span class="badge" style="background: #27AE60;">Low</span>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    {% empty %}
-                    <p class="text-muted">No completed requests</p>
-                    {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-5">
+                            <i class="fas fa-inbox" style="font-size: 3rem; opacity: 0.3;"></i><br>
+                            No completed requests
+                        </p>
+                    {% endif %}
                 </div>
             </div>
         </div>
