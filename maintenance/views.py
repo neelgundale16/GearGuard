@@ -21,7 +21,6 @@ def dashboard(request):
     ).count()
     in_progress_requests = MaintenanceRequest.objects.filter(status='in_progress').count()
     
-    # Get recent requests
     recent_requests = MaintenanceRequest.objects.select_related(
         'equipment', 'requested_by'
     ).order_by('-created_at')[:5]
@@ -37,22 +36,18 @@ def dashboard(request):
 
 @login_required
 def ml_dashboard(request):
-    """Analytics Dashboard with ML predictions"""
+    """Analytics Dashboard with REAL ML predictions"""
     
     ml_engine = RealMLEngine()
-    
-    # Check if model exists
     model_data = ml_engine.load_latest_model()
     
     if not model_data:
-        messages.warning(request, 'No trained model found. Please train the model first.')
         context = {
             'model_exists': False,
             'equipment_count': Equipment.objects.count(),
         }
         return render(request, 'maintenance/ml_dashboard.html', context)
     
-    # Get predictions for all equipment
     equipment_list = Equipment.objects.all()
     predictions = []
     
@@ -64,13 +59,19 @@ def ml_dashboard(request):
                 'prediction': pred
             })
     
-    # Sort by priority
-    predictions.sort(key=lambda x: x['prediction']['priority_score'], reverse=True)
+    predictions.sort(key=lambda x: x['prediction']['days_until_maintenance'])
     
     context = {
         'model_exists': True,
-        'model_info': model_data,
-        'predictions': predictions[:20],  # Top 20
+        'model_info': {
+            'model_name': f"Ensemble ({model_data.get('best_model', 'Unknown')})",
+            'r2': model_data.get('r2', 0) * 100,
+            'cv_r2': model_data.get('cv_r2', 0) * 100,
+            'mae': model_data.get('mae', 0),
+            'training_samples': model_data.get('training_samples', 0),
+            'trained_date': model_data.get('trained_date', 'Unknown')
+        },
+        'predictions': predictions[:20],
         'total_equipment': equipment_list.count(),
     }
     
@@ -84,7 +85,7 @@ def pm_dashboard(request):
 
 @login_required
 def kanban_view(request):
-    """Kanban board with dynamic data"""
+    """Kanban board"""
     
     pending = MaintenanceRequest.objects.filter(
         Q(status='open') | Q(status='pending')
@@ -252,27 +253,62 @@ def work_center_create(request):
 
 @login_required
 def train_model(request):
-    """Train ML model"""
+    """Train ML model - REAL TRAINING"""
     if not request.user.is_staff:
         messages.error(request, 'Admin access required.')
         return redirect('maintenance:dashboard')
     
     if request.method == 'POST':
         ml_engine = RealMLEngine()
-        result = ml_engine.train_models(Equipment.objects.all())
+        equipment = Equipment.objects.all()
+        
+        equipment_with_history = []
+        for eq in equipment:
+            if eq.maintenance_requests.filter(status='completed').count() >= 2:
+                equipment_with_history.append(eq)
+        
+        if len(equipment_with_history) < 20:
+            messages.error(
+                request, 
+                f'❌ Need at least 20 equipment with 2+ completed maintenance records. '
+                f'Currently have {len(equipment_with_history)}.'
+            )
+            return redirect('maintenance:ml_dashboard')
+        
+        result = ml_engine.train_models(equipment)
         
         if result['success']:
+            best_model = result['best_model']
+            r2 = result['results'][best_model]['r2']
+            mae = result['results'][best_model]['mae']
+            cv_r2 = result['results'][best_model]['cv_r2']
+            
             messages.success(
                 request,
-                f"Model trained! Best: {result['best_model']} with {result['results'][result['best_model']]['r2']*100:.1f}% accuracy"
+                f"✅ Training Complete! "
+                f"Best Model: {best_model} | "
+                f"Test R²: {r2*100:.1f}% | "
+                f"CV R²: {cv_r2*100:.1f}% | "
+                f"MAE: {mae:.1f} days"
             )
         else:
-            messages.error(request, f"Training failed: {result.get('error')}")
+            messages.error(request, f"❌ Training failed: {result.get('error')}")
         
         return redirect('maintenance:ml_dashboard')
     
+    equipment_count = Equipment.objects.count()
+    
+    equipment_with_history = 0
+    for eq in Equipment.objects.all():
+        if eq.maintenance_requests.filter(status='completed').count() >= 2:
+            equipment_with_history += 1
+    
+    requests_count = MaintenanceRequest.objects.filter(status='completed').count()
+    
     context = {
-        'equipment_count': Equipment.objects.count(),
-        'requests_count': MaintenanceRequest.objects.count(),
+        'equipment_count': equipment_count,
+        'equipment_with_history': equipment_with_history,
+        'requests_count': requests_count,
+        'ready_to_train': equipment_with_history >= 20
     }
     return render(request, 'maintenance/train_model.html', context)
