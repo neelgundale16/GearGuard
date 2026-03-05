@@ -289,7 +289,7 @@ python manage.py train_model
 ## Author
 
 **Neel Gundale**  
-- LinkedIn: [https://www.linkedin.com/in/neelgundale16/]([text](https://www.linkedin.com/in/neelgundale16/))
+- LinkedIn: [https://www.linkedin.com/in/neelgundale16/](https://www.linkedin.com/in/neelgundale16/)
 - Email: neelgundale@gmail.com
 
 **Built with ❤️ for industrial facilities worldwide**
