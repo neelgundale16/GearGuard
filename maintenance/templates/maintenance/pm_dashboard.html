@@ -2,6 +2,23 @@
 
 {% block title %}PM Metrics - GearGuard{% endblock %}
 
+{% block extra_css %}
+<style>
+.metric-card {
+    height: 100%;
+    min-height: 350px;
+}
+.badge-excellent { background: #27AE60; color: white; }
+.badge-good { background: #3498DB; color: white; }
+.badge-medium { background: #F39C12; color: white; }
+.badge-high { background: #27AE60; color: white; }
+.badge-low { background: #F39C12; color: white; }
+.badge-healthy { background: #27AE60; color: white; }
+.badge-fair { background: #3498DB; color: white; }
+.badge-critical { background: #E74C3C; color: white; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid mt-4">
     <div class="mb-4">
@@ -13,19 +30,19 @@
     
     <div class="row">
         <!-- User Engagement -->
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card">
+        <div class="col-md-6 col-lg-4 mb-4 d-flex">
+            <div class="card metric-card w-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-users"></i> User Engagement</span>
                     {% if metrics.user_engagement.health_status == 'Excellent' %}
-                        <span class="badge" style="background: #27AE60; color: white;">Excellent</span>
+                        <span class="badge badge-excellent">Excellent</span>
                     {% elif metrics.user_engagement.health_status == 'Good' %}
-                        <span class="badge" style="background: #3498DB; color: white;">Good</span>
+                        <span class="badge badge-good">Good</span>
                     {% else %}
-                        <span class="badge" style="background: #F39C12; color: white;">{{ metrics.user_engagement.health_status }}</span>
+                        <span class="badge badge-medium">{{ metrics.user_engagement.health_status }}</span>
                     {% endif %}
                 </div>
-                <div class="card-body text-center">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
                     <h2 style="font-size: 3rem; font-weight: 900; color: #FF6B35; margin: 20px 0;">
                         {{ metrics.user_engagement.stickiness_pct }}%
                     </h2>
@@ -50,19 +67,19 @@
         </div>
 
         <!-- Feature Adoption -->
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card">
+        <div class="col-md-6 col-lg-4 mb-4 d-flex">
+            <div class="card metric-card w-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-rocket"></i> Feature Adoption</span>
                     {% if metrics.feature_adoption.adoption_health == 'High' %}
-                        <span class="badge" style="background: #27AE60; color: white;">High</span>
+                        <span class="badge badge-high">High</span>
                     {% elif metrics.feature_adoption.adoption_health == 'Medium' %}
-                        <span class="badge" style="background: #3498DB; color: white;">Medium</span>
+                        <span class="badge badge-good">Medium</span>
                     {% else %}
-                        <span class="badge" style="background: #F39C12; color: white;">{{ metrics.feature_adoption.adoption_health }}</span>
+                        <span class="badge badge-low">{{ metrics.feature_adoption.adoption_health }}</span>
                     {% endif %}
                 </div>
-                <div class="card-body text-center">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
                     <h2 style="font-size: 3rem; font-weight: 900; color: #FF6B35; margin: 20px 0;">
                         {{ metrics.feature_adoption.adoption_rate_pct }}%
                     </h2>
@@ -81,19 +98,19 @@
         </div>
 
         <!-- Operational Health -->
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card">
+        <div class="col-md-6 col-lg-4 mb-4 d-flex">
+            <div class="card metric-card w-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-cog"></i> Equipment Health</span>
                     {% if metrics.operational_health.status == 'Healthy' %}
-                        <span class="badge" style="background: #27AE60; color: white;">Healthy</span>
+                        <span class="badge badge-healthy">Healthy</span>
                     {% elif metrics.operational_health.status == 'Fair' %}
-                        <span class="badge" style="background: #3498DB; color: white;">Fair</span>
+                        <span class="badge badge-fair">Fair</span>
                     {% else %}
-                        <span class="badge" style="background: #E74C3C; color: white;">{{ metrics.operational_health.status }}</span>
+                        <span class="badge badge-critical">{{ metrics.operational_health.status }}</span>
                     {% endif %}
                 </div>
-                <div class="card-body text-center">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
                     <h2 style="font-size: 3rem; font-weight: 900; color: #FF6B35; margin: 20px 0;">
                         {{ metrics.operational_health.utilization_pct }}%
                     </h2>
@@ -116,13 +133,13 @@
         </div>
 
         <!-- Maintenance Effectiveness -->
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card">
+        <div class="col-md-6 col-lg-4 mb-4 d-flex">
+            <div class="card metric-card w-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-wrench"></i> Maintenance</span>
                     <span class="badge" style="background: #27AE60; color: white;">{{ metrics.maintenance_effectiveness.completion_rate_pct }}%</span>
                 </div>
-                <div class="card-body">
+                <div class="card-body d-flex flex-column justify-content-center">
                     <div class="d-flex justify-content-between mb-2">
                         <span style="color: #7F8C8D;">Total Requests</span>
                         <span style="font-weight: 600;">{{ metrics.maintenance_effectiveness.total_requests }}</span>
@@ -144,13 +161,13 @@
         </div>
 
         <!-- Business Impact -->
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card">
+        <div class="col-md-6 col-lg-4 mb-4 d-flex">
+            <div class="card metric-card w-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-dollar-sign"></i> Business Impact</span>
                     <span class="badge" style="background: #3498DB; color: white;">{{ metrics.business_impact.roi_pct }}% ROI</span>
                 </div>
-                <div class="card-body text-center">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
                     <h2 style="font-size: 2.5rem; font-weight: 900; color: #27AE60; margin: 20px 0;">
                         ${{ metrics.business_impact.cost_avoidance_usd|floatformat:0 }}
                     </h2>
@@ -169,13 +186,13 @@
         </div>
 
         <!-- ML Performance -->
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card">
+        <div class="col-md-6 col-lg-4 mb-4 d-flex">
+            <div class="card metric-card w-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-brain"></i> ML Performance</span>
-                    <span class="badge" style="background: #27AE60; color: white;">{{ metrics.ml_performance.status }}</span>
+                    <span class="badge badge-high">{{ metrics.ml_performance.status }}</span>
                 </div>
-                <div class="card-body text-center">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
                     <h2 style="font-size: 3rem; font-weight: 900; color: #FF6B35; margin: 20px 0;">
                         {{ metrics.ml_performance.model_accuracy_pct }}%
                     </h2>
