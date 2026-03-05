@@ -1,96 +1,104 @@
 {% extends 'base.html' %}
 
+{% block title %}Dashboard - GearGuard{% endblock %}
+
 {% block content %}
 <div class="container-fluid mt-4">
     
-    <!-- Admin/User Role Badge -->
     {% if user.is_staff %}
         <div class="alert alert-warning mb-4" style="border-radius: 12px;">
             <i class="fas fa-crown"></i> <strong>Admin View:</strong> You have full access to all features including ML training and analytics.
         </div>
-    {% else %}
-        <div class="alert alert-info mb-4" style="border-radius: 12px;">
-            <i class="fas fa-user"></i> <strong>User View:</strong> You can view and manage your assigned equipment.
-        </div>
     {% endif %}
     
-    <!-- Header with Live Indicator -->
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="mb-1" style="font-weight: 700;">
-                Maintenance Dashboard
+            <h1 class="mb-1" style="font-weight: 700; color: #2C3E50;">
+                <i class="fas fa-tachometer-alt"></i> Maintenance Dashboard
             </h1>
             <div class="live-indicator" style="color: #6b7280;">
                 <span class="live-dot"></span>
                 <span style="font-size: 0.9rem;">Live Data - Auto-updating every 30s</span>
             </div>
         </div>
-        
     </div>
     
-    
-    <!-- Statistics Cards - Industrial Simple Design -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-cog"></i>
-            </div>
-            <div>
-                <h6 style="color: #7F8C8D; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Total Equipment</h6>
-                <h2 style="font-weight: 700; margin: 0; color: #2C3E50;">{{ total_equipment }}</h2>
-                <div class="mt-2">
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <!-- Total Equipment -->
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div>
+                    <h6 style="color: #7F8C8D; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Total Equipment
+                    </h6>
+                    <h2 style="font-weight: 700; margin: 0; color: #2C3E50;">
+                        {{ total_equipment }}
+                    </h2>
                     <small style="color: #27AE60;">
                         <i class="fas fa-arrow-up"></i> Active
                     </small>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="col-md-3">
-        <div class="stat-card" style="border-left-color: #F39C12;">
-            <div class="stat-icon" style="color: #F39C12;">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div>
-                <h6 style="color: #7F8C8D; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Pending Requests</h6>
-                <h2 style="font-weight: 700; margin: 0; color: #2C3E50;">{{ pending_requests }}</h2>
-                <div class="mt-2">
+
+        <!-- Pending Requests -->
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #F39C12;">
+                <div class="stat-icon" style="color: #F39C12;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <h6 style="color: #7F8C8D; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">
+                        Pending Requests
+                    </h6>
+                    <h2 style="font-weight: 700; margin: 0; color: #2C3E50;">
+                        {{ pending_requests }}
+                    </h2>
                     <small style="color: #F39C12;">
                         <i class="fas fa-clock"></i> Needs attention
                     </small>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="col-md-3">
-        <div class="stat-card" style="border-left-color: #3498DB;">
-            <div class="stat-icon" style="color: #3498DB;">
-                <i class="fas fa-wrench"></i>
-            </div>
-            <div>
-                <h6 style="color: #7F8C8D; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">In Progress</h6>
-                <h2 style="font-weight: 700; margin: 0; color: #2C3E50;">{{ in_progress_requests }}</h2>
-                <div class="mt-2">
+
+        <!-- In Progress -->
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #3498DB;">
+                <div class="stat-icon" style="color: #3498DB;">
+                    <i class="fas fa-wrench"></i>
+                </div>
+                <div>
+                    <h6 style="color: #7F8C8D; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">
+                        In Progress
+                    </h6>
+                    <h2 style="font-weight: 700; margin: 0; color: #2C3E50;">
+                        {{ in_progress_requests }}
+                    </h2>
                     <small style="color: #3498DB;">
                         <i class="fas fa-sync fa-spin"></i> Active now
                     </small>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="col-md-3">
-        <div class="stat-card" style="border-left-color: #27AE60;">
-            <div class="stat-icon" style="color: #27AE60;">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div>
-                <h6 style="color: #7F8C8D; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Predictions</h6>
-                <h2 style="font-weight: 700; margin: 0; color: #2C3E50;">{{ total_equipment }}</h2>
-                <div class="mt-2">
+
+        <!-- ML Predictions -->
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #27AE60;">
+                <div class="stat-icon" style="color: #27AE60;">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <h6 style="color: #7F8C8D; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">
+                        ML Predictions
+                    </h6>
+                    <h2 style="font-weight: 700; margin: 0; color: #2C3E50;">
+                        {{ total_equipment }}
+                    </h2>
                     <small style="color: #27AE60;">
                         <i class="fas fa-check-circle"></i> ML Active
                     </small>
@@ -98,139 +106,199 @@
             </div>
         </div>
     </div>
-</div>
 
-    <!-- AI Insights Section -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span>
-                            <i class="fas fa-robot text-primary"></i> AI-Powered Insights
-                        </span>
-                        <span class="badge bg-primary">Live</span>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-info" style="border-radius: 12px; border-left: 4px solid #3b82f6;">
-                        <h6><i class="fas fa-lightbulb"></i> AI Recommendation</h6>
-                        <p class="mb-0">
-                            Based on ML analysis, <strong>3 equipment items</strong> are predicted to need maintenance within the next 7 days. 
-                            <a href="{% url 'maintenance:ml_dashboard' %}" class="alert-link">View AI Dashboard →</a>
-                        </p>
-                    </div>
-                    
-                    <div class="alert alert-warning" style="border-radius: 12px; border-left: 4px solid #f59e0b;">
-                        <h6><i class="fas fa-chart-line"></i> Trend Alert</h6>
-                        <p class="mb-0">
-                            Emergency requests increased by 25% this week. LLM suggests reviewing equipment in Building A.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- AI Insights + Quick Actions Row -->
+    <div class="row mb-4 align-items-stretch">
         
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-bolt text-warning"></i> Quick Actions
+        <!-- AI-Powered Insights (Larger) -->
+        <div class="col-md-8 d-flex">
+            <div class="card w-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>
+                        <i class="fas fa-robot" style="color: #FF6B35;"></i> AI-Powered Insights
+                    </span>
+                    <span class="badge" style="background: #FF6B35; color: white;">
+                        <i class="fas fa-circle" style="font-size: 0.5rem;"></i> Live
+                    </span>
                 </div>
                 <div class="card-body">
-                    <div class="d-grid gap-2">
-                       <a href="{% url 'maintenance:equipment_create' %}" class="btn btn-primary">
-                            Add Equipment
-                        </a>
-                        <a href="{% url 'maintenance:request_create' %}" class="btn btn-outline-primary">
-                            New Request
-                        </a>
-                        <a href="{% url 'maintenance:ml_dashboard' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-brain"></i> Analytics Dashboard
-                        </a>
+                    <!-- AI Recommendation -->
+                    <div class="alert alert-info mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-lightbulb" style="font-size: 1.5rem; margin-right: 1rem; color: #FF6B35;"></i>
+                            <div>
+                                <h6 class="mb-2" style="font-weight: 600; color: #2C3E50;">
+                                    AI Recommendation
+                                </h6>
+                                <p class="mb-0" style="color: #2C3E50;">
+                                    Based on ML analysis, <strong>{{ total_equipment }}</strong> equipment items have active predictions. 
+                                    <a href="{% url 'maintenance:ml_dashboard' %}" class="alert-link" style="color: #FF6B35; font-weight: 600;">
+                                        View Analytics Dashboard
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trend Alert -->
+                    <div class="alert alert-warning mb-0">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-chart-line" style="font-size: 1.5rem; margin-right: 1rem; color: #F39C12;"></i>
+                            <div>
+                                <h6 class="mb-2" style="font-weight: 600; color: #2C3E50;">
+                                    System Monitoring
+                                </h6>
+                                <p class="mb-0" style="color: #2C3E50;">
+                                    Currently tracking <strong>{{ total_equipment }}</strong> equipment items across all facilities. 
+                                    Predictive maintenance system is active and monitoring continuously.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Recent Requests with Modern Table -->
 
-<div class="card">
-    <div class="card-header">
-        <i class="fas fa-history"></i> Recent Maintenance Requests
+        <!-- Quick Actions (Smaller) -->
+        <div class="col-md-4 d-flex">
+            <div class="card w-100">
+                <div class="card-header">
+                    <i class="fas fa-bolt" style="color: #FF6B35;"></i> Quick Actions
+                </div>
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <a href="{% url 'maintenance:equipment_create' %}" class="btn btn-primary w-100 mb-3">
+                        Add Equipment
+                    </a>
+                    <a href="{% url 'maintenance:request_create' %}" class="btn btn-outline-primary w-100">
+                        New Request
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Equipment</th>
-                        <th>Title</th>
-                        <th>Priority</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for request in recent_requests %}
-                    <tr>
-                        <td>
-                            <strong>{{ request.equipment.name }}</strong><br>
-                            <small style="color: #6b7280;">{{ request.equipment.equipment_id }}</small>
-                        </td>
-                        <td>{{ request.title }}</td>
-                        <td>
-                            {% if request.priority == 'critical' %}
-                                <span class="badge" style="background: #E74C3C; color: white;">
-                                    <i class="fas fa-fire"></i> Critical
-                                </span>
-                            {% elif request.priority == 'high' %}
-                                <span class="badge" style="background: #F39C12; color: white;">
-                                    <i class="fas fa-exclamation"></i> High
-                                </span>
-                            {% elif request.priority == 'medium' %}
-                                <span class="badge" style="background: #3498DB; color: white;">
-                                    <i class="fas fa-info"></i> Medium
-                                </span>
-                            {% else %}
-                                <span class="badge" style="background: #27AE60; color: white;">
-                                    <i class="fas fa-check"></i> Low
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if request.status == 'completed' %}
-                                <span class="badge bg-success">Completed</span>
-                            {% elif request.status == 'in_progress' %}
-                                <span class="badge" style="background: #3498DB;">In Progress</span>
-                            {% else %}
-                                <span class="badge" style="background: #F39C12;">Pending</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ request.created_at|date:"M d, Y" }}</td>
-                        <td>
-                            <a href="{% url 'maintenance:equipment_detail' request.equipment.id %}" 
-                               class="btn btn-sm btn-outline-primary" 
-                               title="View Equipment Details">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center" style="padding: 3rem;">
-                            <i class="fas fa-inbox fa-3x" style="color: #d1d5db; margin-bottom: 1rem;"></i>
-                            <p style="color: #6b7280;">No requests yet. Create your first one!</p>
-                            <a href="{% url 'maintenance:request_create' %}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Create Request
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+
+    <!-- Recent Maintenance Requests -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-history"></i> Recent Maintenance Requests
+        </div>
+        <div class="card-body">
+            {% if recent_requests %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Equipment</th>
+                                <th>Title</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in recent_requests %}
+                            <tr>
+                                <td>
+                                    <strong style="color: #2C3E50;">{{ request.equipment.name }}</strong><br>
+                                    <small style="color: #6b7280;">{{ request.equipment.equipment_id }}</small>
+                                </td>
+                                <td>{{ request.title }}</td>
+                                <td>
+                                    {% if request.priority == 'critical' %}
+                                        <span class="badge" style="background: #E74C3C; color: white;">
+                                            <i class="fas fa-fire"></i> Critical
+                                        </span>
+                                    {% elif request.priority == 'high' %}
+                                        <span class="badge" style="background: #F39C12; color: white;">
+                                            <i class="fas fa-exclamation"></i> High
+                                        </span>
+                                    {% elif request.priority == 'medium' %}
+                                        <span class="badge" style="background: #3498DB; color: white;">
+                                            <i class="fas fa-info"></i> Medium
+                                        </span>
+                                    {% else %}
+                                        <span class="badge" style="background: #27AE60; color: white;">
+                                            <i class="fas fa-check"></i> Low
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.status == 'completed' %}
+                                        <span class="badge" style="background: #27AE60; color: white;">
+                                            <i class="fas fa-check-circle"></i> Completed
+                                        </span>
+                                    {% elif request.status == 'in_progress' %}
+                                        <span class="badge" style="background: #3498DB; color: white;">
+                                            <i class="fas fa-sync fa-spin"></i> In Progress
+                                        </span>
+                                    {% else %}
+                                        <span class="badge" style="background: #F39C12; color: white;">
+                                            <i class="fas fa-clock"></i> Pending
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ request.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <a href="{% url 'maintenance:equipment_detail' request.equipment.id %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox" style="font-size: 3rem; color: #E5E7EB; margin-bottom: 1rem;"></i>
+                    <p class="text-muted">No recent maintenance requests</p>
+                    <a href="{% url 'maintenance:request_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create First Request
+                    </a>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
+
+<style>
+    /* Remove blue focus outlines from Quick Actions buttons */
+    .card-body .btn {
+        padding: 12px;
+        font-weight: 600;
+    }
+
+    .btn:focus,
+    .btn:active,
+    .btn:focus-visible,
+    .btn-primary:focus,
+    .btn-primary:active,
+    .btn-outline-primary:focus,
+    .btn-outline-primary:active {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Smooth hover transitions */
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    /* Table row hover effect */
+    .table tbody tr {
+        transition: all 0.2s;
+    }
+
+    .table tbody tr:hover {
+        transform: translateX(2px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+</style>
 {% endblock %}
