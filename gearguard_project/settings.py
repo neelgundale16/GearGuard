@@ -13,8 +13,18 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-chang
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# Allow all hosts in development, Railway will set proper domain in production
-ALLOWED_HOSTS = ['*'] if DEBUG else os.environ.get('ALLOWED_HOSTS', '').split(',')
+# LLAMA CONFIGURATION (Ollama - Local & Free)
+OLLAMA_BASE_URL = os.environ.get('OLLAMA_BASE_URL', 'http://localhost:11434')
+LLAMA_MODEL = os.environ.get('LLAMA_MODEL', 'llama3.2')
+
+# ANTHROPIC (Optional backup)
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY')
+
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS = [RENDER_EXTERNAL_HOSTNAME, 'localhost', '127.0.0.1']
+else:
+    ALLOWED_HOSTS = ['*'] if DEBUG else []
 
 # Application definition
 INSTALLED_APPS = [
@@ -24,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'accounts.apps.AccountsConfig',
     'maintenance.apps.MaintenanceConfig',
 ]
@@ -37,7 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'maintenance.middleware.RoleBasedAccessMiddleware',
+    #'maintenance.middleware.RoleBasedAccessMiddleware',
 ]
 
 ROOT_URLCONF = 'gearguard_project.urls'
@@ -101,7 +112,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_DIRS = []
 
 # WhiteNoise configuration for serving static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
