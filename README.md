@@ -202,7 +202,7 @@ python manage.py runserver
 # Login: admin / admin123
 ```
 
-## Deployment on Render()
+## Deployment on Render
 
 ### Step 1: Prepare Files
 
