@@ -101,17 +101,18 @@
     }
     
     /* Buttons */
-   .btn {
-    border-radius: 6px;
-    padding: 0.5rem 1.5rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    border: none;
-    line-height: 1.2;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-        }
+    .btn {
+        border-radius: 6px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        border: none;
+        line-height: 1.2;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
     .btn-primary {
         background: var(--primary);
         color: white;
@@ -268,6 +269,40 @@
         background-color: var(--secondary) !important;
     }
 
+    /* REMOVE ALL BLUE FOCUS OUTLINES - CRITICAL FIX */
+    *:focus,
+    *:active,
+    *:focus-visible,
+    .btn:focus,
+    .btn:active,
+    .btn:focus-visible,
+    a:focus,
+    a:active,
+    button:focus,
+    button:active,
+    input:focus,
+    select:focus,
+    textarea:focus,
+    .nav-link:focus,
+    .nav-link:active {
+        outline: none !important;
+        box-shadow: none !important;
+        border-color: inherit !important;
+    }
+
+    /* Remove blue background on button click */
+    .btn:active,
+    .btn.active {
+        filter: brightness(0.9);
+    }
+
+    /* Remove blue ring from Bootstrap */
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(255, 107, 53, 0.25);
+    }
+
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -286,13 +321,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'maintenance:dashboard' %}">
-                            <i class="fas fa-home"></i> Dashboard
+                        <a class="nav-link" href="{% url 'maintenance:ml_dashboard' %}">
+                            <i class="fas fa-brain"></i> Analytics
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'maintenance:ml_dashboard' %}">
-                            <i class="fas fa-brain"></i> Analytics
+                        <a class="nav-link" href="{% url 'maintenance:pm_dashboard' %}">
+                            <i class="fas fa-chart-bar"></i> PM Metrics
                         </a>
                     </li>
                     <li class="nav-item">
@@ -363,7 +398,7 @@
     <footer class="text-center py-4 mt-5" style="background: white; border-top: 1px solid #e5e7eb;">
         <div class="container">
             <p class="mb-0" style="color: #6b7280;">
-                &copy; GearGuard 2026
+                &copy; GearGuard 2026 | Predictive Maintenance System
             </p>
         </div>
     </footer>
