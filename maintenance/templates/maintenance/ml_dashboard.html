@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Analytics - GearGuard{% endblock %}
+
+{% block extra_css %}
+<style>
+.priority-bar {
+    height: 20px;
+    background: #FF6B35;
+}
+.days-urgent { color: #E74C3C; }
+.days-soon { color: #F39C12; }
+.days-good { color: #27AE60; }
+.badge-urgent { background: #E74C3C; color: white; }
+.badge-soon { background: #F39C12; color: white; }
+.badge-good { background: #27AE60; color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h1 class="mb-4" style="font-weight: 700; color: #2C3E50;">
+        <i class="fas fa-brain"></i> AI Analytics Dashboard
+    </h1>
+
+    {% if not model_exists %}
+        <!-- No Model Trained Yet -->
+        <div class="alert alert-warning">
+            <h5><i class="fas fa-exclamation-triangle"></i> No ML Model Found</h5>
+            <p class="mb-3">Train a model first to see predictions and analytics.</p>
+            <a href="{% url 'maintenance:train_model' %}" class="btn btn-primary">
+                <i class="fas fa-rocket"></i> Train Model Now
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-database"></i> Available Data
+            </div>
+            <div class="card-body">
+                <p><strong>Equipment Count:</strong> {{ equipment_count }}</p>
+                <p class="mb-0">You need at least 50 equipment with maintenance history to train a model.</p>
+            </div>
+        </div>
+    {% else %}
+        <!-- Model Exists - Show Predictions -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-chart-line"></i> ML Model Information</span>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <h6 style="color: #7F8C8D; font-size: 0.8rem; text-transform: uppercase;">Model Type</h6>
+                                <p style="font-weight: 600; color: #2C3E50;">{{ model_info.model_name }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <h6 style="color: #7F8C8D; font-size: 0.8rem; text-transform: uppercase;">Accuracy (R²)</h6>
+                                <p style="font-weight: 600; color: #27AE60;">{{ model_info.r2|floatformat:1 }}%</p>
+                            </div>
+                            <div class="col-md-3">
+                                <h6 style="color: #7F8C8D; font-size: 0.8rem; text-transform: uppercase;">MAE (Days)</h6>
+                                <p style="font-weight: 600; color: #3498DB;">{{ model_info.mae|floatformat:2 }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <h6 style="color: #7F8C8D; font-size: 0.8rem; text-transform: uppercase;">Training Samples</h6>
+                                <p style="font-weight: 600; color: #2C3E50;">{{ model_info.training_samples }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Predictions Table -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list"></i> Equipment Predictions (Top 20 by Priority)
+            </div>
+            <div class="card-body">
+                {% if predictions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Equipment</th>
+                                <th>Days Until Maintenance</th>
+                                <th>Priority Score</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pred in predictions %}
+                            <tr>
+                                <td>
+                                    <strong>{{ pred.equipment.name }}</strong><br>
+                                    <small style="color: #6b7280;">{{ pred.equipment.equipment_id }}</small>
+                                </td>
+                                <td>
+                                    {% if pred.prediction.days_until_maintenance < 7 %}
+                                        <strong class="days-urgent">{{ pred.prediction.days_until_maintenance|floatformat:0 }} days</strong>
+                                    {% elif pred.prediction.days_until_maintenance < 14 %}
+                                        <strong class="days-soon">{{ pred.prediction.days_until_maintenance|floatformat:0 }} days</strong>
+                                    {% else %}
+                                        <strong class="days-good">{{ pred.prediction.days_until_maintenance|floatformat:0 }} days</strong>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                       <div class="progress-bar priority-bar" role="progressbar" data-width="{{ pred.prediction.priority_score }}"></div>
+                                            {{ pred.prediction.priority_score|floatformat:0 }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if pred.prediction.days_until_maintenance < 7 %}
+                                        <span class="badge badge-urgent">Urgent</span>
+                                    {% elif pred.prediction.days_until_maintenance < 14 %}
+                                        <span class="badge badge-soon">Soon</span>
+                                    {% else %}
+                                        <span class="badge badge-good">Good</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'maintenance:equipment_detail' pred.equipment.id %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox" style="font-size: 3rem; color: #E5E7EB; margin-bottom: 1rem;"></i>
+                    <p class="text-muted">No predictions available</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Retrain Option -->
+        <div class="mt-4">
+            <a href="{% url 'maintenance:train_model' %}" class="btn btn-primary">
+                Retrain Model
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+<script>
+document.querySelectorAll('.priority-bar').forEach(bar => {
+    bar.style.width = bar.dataset.width + "%";
+});
+</script>
