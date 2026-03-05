@@ -1,0 +1,26 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-cogs"></i> Model Training</h5>
+        </div>
+        <div class="card-body">
+            <p>Train ML model on latest data.</p>
+            <div class="alert alert-info">
+                <strong>Equipment:</strong> {{ equipment_count }}<br>
+                <strong>Requests:</strong> {{ requests_count }}
+            </div>
+            
+            <form method="post" action="{% url 'maintenance:train_model' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-robot"></i> Start Training
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
