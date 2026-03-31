@@ -199,7 +199,7 @@ python manage.py shell
 python manage.py runserver
 
 # 8. Visit http://127.0.0.1:8000
-# Login: admin / admin123
+# Login: admin / Ninine@292316
 ```
 
 ## Deployment on Render
@@ -252,7 +252,7 @@ git push origin main
 5. Render auto-detects `render.yaml`
 6. Click "Create Web Service"
 7. Wait 5-10 minutes
-8. Done! Your app is live at `https://your-app.onrender.com`
+8. Done! Your app is live at `https://gearguard-app.onrender.com`
 
 ### Step 3: Post-Deployment
 ```bash
