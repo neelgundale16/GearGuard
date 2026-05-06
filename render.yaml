@@ -1,27 +1,27 @@
 services:
   - type: web
-    name: gearguard-app
+    name: gearguard
     env: python
     plan: free
     buildCommand: |
-      pip install --upgrade pip
       pip install -r requirements.txt
       python manage.py collectstatic --no-input
       python manage.py migrate
+      python manage.py seed_data --equipment-count 300
     startCommand: gunicorn gearguard_project.wsgi:application
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.8
+        value: 3.11.0
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
-        value: "False"
+        value: False
       - key: DATABASE_URL
         fromDatabase:
           name: gearguard-db
           property: connectionString
-      - key: RENDER_EXTERNAL_HOSTNAME
-        sync: false
+      - key: GEMINI_API_KEY
+        value: ""   # Optional — leave blank, or add your free key from aistudio.google.com
 
 databases:
   - name: gearguard-db
