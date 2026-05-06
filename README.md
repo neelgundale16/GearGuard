@@ -1,227 +1,164 @@
-# GearGuard - AI Powered Industrial Equipment Maintenance Management System
+# GearGuard — AI-Powered Industrial Maintenance Management System
 
 ## Overview
 
-GearGuard is a comprehensive maintenance management system that leverages **Machine Learning** to predict equipment failures, optimize maintenance schedules, and reduce downtime in industrial facilities.
+GearGuard is a comprehensive predictive maintenance management system built with Django and an ensemble ML pipeline. It predicts equipment failure windows, optimises maintenance scheduling, and surfaces real-time operational analytics for industrial facilities — with zero paid API dependency.
 
 ### Key Features
 
-✅ **Equipment Tracking** - Complete asset management with detailed histories  
-✅ **ML Predictions** - 85% accurate failure forecasting using Gradient Boosting  
-✅ **Real-time Dashboard** - Live updates every 30 seconds  
-✅ **Maintenance Scheduling** - Calendar and Kanban workflow views  
-✅ **Analytics** - MTBF, MTTR, and utilization metrics  
-✅ **Role-based Access** - Admin and User permission levels  
-✅ **Mobile Responsive** - Works on all devices  
-✅ **LLM Integration** - Llama 3.2 for data generation and insights
+✅ **Equipment Tracking** — Complete asset management with full maintenance histories  
+✅ **ML Predictions** — 75–88% accurate failure-window forecasting (Gradient Boosting / XGBoost / Random Forest ensemble)  
+✅ **Real-time Dashboard** — Live stats pulled from the database, auto-refreshes every 30 s  
+✅ **Maintenance Scheduling** — Calendar and Kanban workflow views  
+✅ **PM Analytics Dashboard** — MTBF, MTTR, utilisation, cost avoidance, ROI — all live from DB  
+✅ **Role-based Access** — Admin and Technician permission levels  
+✅ **Mobile Responsive** — Bootstrap 5 — works on all devices  
+✅ **Cloud-ready** — Deployed on Render (PostgreSQL + Gunicorn + WhiteNoise)  
+✅ **Optional LLM** — Google Gemini 1.5 Flash (free tier) for insights; full rule-based fallback if no key set
+
+---
 
 ## Tech Stack
 
-**Backend:**
-- Django 5.0 (Python web framework)
-- SQLite/PostgreSQL (Database)
-- Scikit-learn (Machine Learning)
-- Pandas & NumPy (Data processing)
+| Layer | Technology |
+|---|---|
+| Backend | Django 5.0 (Python 3.11) |
+| Database | SQLite (dev) / PostgreSQL (Render production) |
+| ML | Scikit-learn, XGBoost, NumPy, Joblib |
+| Frontend | Bootstrap 5.3, Chart.js, Font Awesome, ES6 JS |
+| Deployment | Render (free tier), Gunicorn, WhiteNoise |
+| LLM (optional) | Google Gemini 1.5 Flash via `GEMINI_API_KEY` env var |
 
-**Frontend:**
-- Bootstrap 5.3 (UI framework)
-- JavaScript (ES6+)
-- Chart.js (Data visualization)
-- Font Awesome (Icons)
+> **Note:** Ollama / Llama 3.2 has been removed. It requires a localhost process and does not run on Render. The system works fully without any LLM key set.
 
-**ML/AI:**
-- **Ensemble Learning**: Gradient Boosting + XGBoost + Random Forest
-- **Feature Engineering**: 9 engineered features from maintenance patterns
-- **Real-time Model Updates**: Continuous learning from new data
-- **Llama 3.2 Integration**: Local LLM for intelligent data generation
+---
 
-## Machine Learning Features
+## Machine Learning
 
-### Predictive Maintenance Model
+### Predictive Maintenance Ensemble
 
-**Algorithm**: Ensemble (Gradient Boosting + XGBoost + Random Forest)  
-**Accuracy**: 75-90% R² score (realistic for industrial data)  
-**MAE**: 3-7 days (Mean Absolute Error)
+**Algorithms:** Gradient Boosting + XGBoost + Random Forest — best model saved per training run  
+**Accuracy:** 75–88% R² (realistic for noisy industrial data — 100% would be overfitting)  
+**MAE:** 5–12 days
 
-**Features Used:**
-- Days since last maintenance
-- Equipment age
-- Maintenance frequency
-- Historical failure patterns
-- Equipment status
-- Days since purchase
-- Priority indicators
-- Work center metrics
-- Utilization rates
+### Features (zero circular leakage)
 
-**Output:**
-- Days until next maintenance needed
-- Priority score (0-100)
-- Recommended actions
+| # | Feature | Why it is useful |
+|---|---|---|
+| 0 | `avg_historical_interval` | Each equipment has a characteristic base maintenance cadence (15–90 d) — primary signal |
+| 1 | `interval_std` | Variability in that equipment's cadence |
+| 2 | `recent_vs_historical_ratio` | Is the equipment deteriorating faster recently? |
+| 3 | `equipment_age_years` | Older equipment needs more frequent maintenance |
+| 4 | `days_since_last_maintenance` | Recency pressure |
+| 5 | `total_maintenance_count` | Equipment maturity / history depth |
+| 6 | `avg_actual_hours` | Job complexity proxy |
+| 7 | `age_x_avg_interval` | Interaction term |
 
-### Analytics Metrics
+> **Priority and request type are NOT features.** In the previous broken version they were derived from the interval itself (interval ≤ 10 → emergency → critical), so the model learned priority → interval and scored 100% R². Now they are assigned independently of interval, eliminating the circular leakage.
 
-- **MTBF** (Mean Time Between Failures)
-- **MTTR** (Mean Time To Repair)
-- **Equipment Health Score** (0-100)
-- **Utilization Rates**
-- **Trend Analysis**
-- **Cost Avoidance Tracking**
-- **ROI Calculations**
+### Output per Equipment
 
-## LLM Integration - Llama 3.2
+- Days until next maintenance
+- Priority score (0–100, unique per equipment)
+- Urgency: Low / Medium / High / Critical
+- Recommended action text
 
-### Why Llama?
-- **100% FREE** - No API costs (runs locally via Ollama)
-- **Privacy** - Data stays on your machine
-- **Fast** - 2-3 minutes for 1000+ records
-- **Realistic** - Generates diverse, industry-standard data
+---
 
-### How We Use Llama
+## Data Generation
 
-#### 1. **Intelligent Data Generation**
-Instead of hardcoded fake data, we use Llama to generate:
-- 20 realistic equipment types (CNC machines, robots, presses, etc.)
-- 50 common failure patterns (bearing wear, seal leaks, etc.)
-- Varied maintenance descriptions
-- Priority-based action recommendations
+No Ollama. No external scripts. One Django management command:
 
-#### 2. **Template-Based Scaling**
-- Llama generates **templates** once (2 LLM calls)
-- Code combines templates **combinatorially** (1000+ unique records)
-- Result: Realistic data in 2-3 minutes, not 3 hours
-
-### Setup Llama Locally
 ```bash
-# Install Ollama (Windows/Mac/Linux)
-# Visit: https://ollama.ai
-
-# Pull Llama 3.2 model
-ollama pull llama3.2
-
-# Verify it's running
-ollama list
-
-# Set environment variable
-# Windows:
-set OLLAMA_BASE_URL=http://localhost:11434
-set LLAMA_MODEL=llama3.2
-
-# Mac/Linux:
-export OLLAMA_BASE_URL=http://localhost:11434
-export LLAMA_MODEL=llama3.2
+python manage.py seed_data
 ```
 
-### Generate Production Data (with Llama)
+Generates in ~25 seconds:
+- **300 equipment** across 10 realistic work centres
+- **5 000+ completed maintenance records** with realistic per-equipment intervals + noise
+- **20 technician users**
+- ~70 live pending / in-progress requests
+
+---
+
+## Quick Start (Local Development)
+
 ```bash
-# This uses Llama to create realistic data
-python generate_production_data.py
+# 1. Clone
+git clone https://github.com/neelgundale16/GearGuard.git
+cd GearGuard
 
-# Expected output:
-# - 200 equipment
-# - 1000+ maintenance records
-# - 15 technician users
-# - Time: 2-3 minutes
-# - Cost: $0.00
-```
-
-### Llama Usage in Code
-```python
-import requests
-
-def call_llama(prompt):
-    url = f"{OLLAMA_BASE_URL}/api/generate"
-    response = requests.post(url, json={
-        "model": LLAMA_MODEL,
-        "prompt": prompt,
-        "stream": False
-    })
-    return response.json()['response']
-
-# Example: Generate equipment types
-equipment_types = call_llama(
-    "Generate 20 industrial equipment types. "
-    "Return ONLY a Python list."
-)
-```
-## User Roles
-
-### Admin
-- Full system access
-- Train ML models
-- Manage users
-- Delete records
-- Export data
-- View PM metrics
-
-### Regular User
-- View equipment
-- Create maintenance requests
-- Update request status
-- View analytics (read-only)
-
-## Installation & Setup
-
-### Prerequisites
-- Python 3.11+
-- Ollama (for Llama 3.2)
-
-### Quick Start
-```bash
-# 1. Clone repository
-git clone https://github.com/neelgundale16/gearguard.git
-cd gearguard
-
-# 2. Create virtual environment
+# 2. Virtual environment
 python -m venv venv
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Mac/Linux
+source venv/bin/activate        # Mac / Linux
+venv\Scripts\activate           # Windows
 
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Setup database
+# 4. Create .env file in project root
+SECRET_KEY=any-random-string-here
+DEBUG=True
+# Optional — only needed for AI insight features:
+# GEMINI_API_KEY=your-free-gemini-key
+
+# 5. Run migrations
 python manage.py migrate
 
-# 5. Generate production data (with Llama)
-python generate_production_data.py
+# 6. Seed data (~25 s)
+python manage.py seed_data
 
-# 6. Train ML model
-python manage.py shell
->>> from maintenance.ml_engine import RealMLEngine
->>> from maintenance.models import Equipment
->>> engine = RealMLEngine()
->>> result = engine.train_models(Equipment.objects.all())
->>> print(f"Accuracy: {result['results'][result['best_model']]['r2']*100:.1f}%")
->>> exit()
-
-# 7. Run server
+# 7. Start server
 python manage.py runserver
 
-# 8. Visit http://127.0.0.1:8000
-# Login: admin / Ninine@292316
+# 8. Open http://127.0.0.1:8000
+#    Admin login:      admin / admin123
+#    Technician login: raj_sharma / tech123
 ```
+
+### Train the ML Model (after seeding)
+
+**Via UI:** Log in as admin → Analytics → Train Model → Start Training
+
+**Via shell:**
+```bash
+python manage.py shell -c "
+from maintenance.ml_engine import RealMLEngine
+from maintenance.models import Equipment
+r = RealMLEngine().train_models(Equipment.objects.all())
+print(r['best_model'], round(r['results'][r['best_model']]['r2']*100, 1), '%')
+"
+```
+
+---
+
+## Commands Reference — What to Run After Each Change
+
+| What you changed | Commands needed |
+|---|---|
+| Python / view / template / HTML only | Just restart `python manage.py runserver` — nothing else |
+| `models.py` (new field, new model) | `python manage.py makemigrations && python manage.py migrate` then restart |
+| Want fresh data (wipe + regenerate) | `python manage.py seed_data` |
+| Retrain ML model | Admin UI → Train Model, or shell command above |
+| Static files (CSS / JS) | `python manage.py collectstatic` (production only; dev auto-serves) |
+| First-time setup | `migrate` → `seed_data` → `runserver` |
+| Pushed new code to Render | Render auto-runs `build.sh` (migrate + seed_data included) |
+
+---
 
 ## Deployment on Render
 
-### Step 1: Prepare Files
+### `render.yaml`
 
-**Create `render.yaml`:**
 ```yaml
 services:
   - type: web
     name: gearguard
     env: python
     plan: free
-    buildCommand: |
-      pip install -r requirements.txt
-      python manage.py collectstatic --no-input
-      python manage.py migrate
-      python generate_production_data.py
+    buildCommand: ./build.sh
     startCommand: gunicorn gearguard_project.wsgi:application
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
@@ -230,6 +167,8 @@ services:
         fromDatabase:
           name: gearguard-db
           property: connectionString
+      # - key: GEMINI_API_KEY
+      #   value: your-key-here   (optional)
 
 databases:
   - name: gearguard-db
@@ -237,59 +176,82 @@ databases:
     plan: free
 ```
 
-### Step 2: Deploy
+### `build.sh`
 
-1. Push to GitHub:
 ```bash
-git add .
-git commit -m "Production ready"
-git push origin main
+#!/usr/bin/env bash
+set -o errexit
+pip install -r requirements.txt
+python manage.py collectstatic --no-input
+python manage.py migrate
+python manage.py seed_data
 ```
 
-2. Go to https://render.com
-3. New → Web Service
-4. Connect GitHub repo
-5. Render auto-detects `render.yaml`
-6. Click "Create Web Service"
-7. Wait 5-10 minutes
-8. Done! Your app is live at `https://gearguard-app.onrender.com`
+### Post-Deploy — Train Model Once
 
-### Step 3: Post-Deployment
 ```bash
-# In Render Shell (from dashboard)
-python manage.py train_model
+# In Render Shell (Dashboard → Shell tab)
+python manage.py shell -c "
+from maintenance.ml_engine import RealMLEngine
+from maintenance.models import Equipment
+r = RealMLEngine().train_models(Equipment.objects.all())
+print('Done:', r['best_model'], round(r['results'][r['best_model']]['r2']*100, 1), '%')
+"
 ```
-## Performance Metrics
 
-- **Prediction Accuracy**: 75-90% R² (realistic)
-- **Page Load Time**: <2s
-- **API Response**: <100ms
-- **Database Queries**: Optimized with `select_related`
-- **Concurrent Users**: Tested up to 100
-- **Data Generation**: 1000+ records in 2-3 minutes
+---
 
-## Future Enhancements
+## User Roles
 
-### Planned Features
+| Role | Access |
+|---|---|
+| **Admin** | Full access — train ML, manage users, delete records, view PM metrics dashboard |
+| **Technician** | Create / update maintenance requests, view equipment, read-only analytics |
 
-**AI/ML Additions:**
-- Advanced anomaly detection
-- Cost prediction models
-- Automated report generation
-- NLP for maintenance notes analysis
+---
 
-**Platform Features:**
-- Mobile app (iOS/Android)
-- IoT sensor integration
-- Email/SMS notifications
-- Advanced reporting
-- Multi-language support
-- API for third-party integrations
+## Project Structure
+
+```
+GearGuard/
+├── maintenance/
+│   ├── management/
+│   │   ├── __init__.py
+│   │   └── commands/
+│   │       ├── __init__.py
+│   │       └── seed_data.py       ← replaces generate_production_data.py
+│   ├── ml_engine.py               ← ensemble training + prediction (fixed leakage + mtime sort)
+│   ├── llm_engine.py              ← Gemini free tier / rule-based fallback (Ollama removed)
+│   ├── pm_metrics.py              ← PM dashboard (live DB + live model accuracy via mtime sort)
+│   ├── models.py
+│   ├── views.py
+│   └── ...
+├── templates/
+├── static/
+├── ml_models/                     ← auto-created, stores timestamped .pkl files
+├── build.sh
+├── render.yaml
+└── requirements.txt
+```
+
+---
+
+## Performance
+
+| Metric | Value |
+|---|---|
+| ML Accuracy | 75–88% R² (varies per run — intentional, not a bug) |
+| Training time | ~15–30 s (300 equipment, 5 000+ records) |
+| Seed time | ~25 s (bulk inserts) |
+| Page load | < 2 s |
+| API response | < 100 ms |
+
+---
 
 ## Author
 
-**Neel Gundale**  
-- LinkedIn: [https://www.linkedin.com/in/neelgundale16/](https://www.linkedin.com/in/neelgundale16/)
+**Neel Gundale**
+- LinkedIn: [linkedin.com/in/neelgundale16](https://www.linkedin.com/in/neelgundale16/)
 - Email: neelgundale@gmail.com
 
-**Built with ❤️ for industrial facilities worldwide**
+Built for industrial facilities worldwide.
