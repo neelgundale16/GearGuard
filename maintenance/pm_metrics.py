@@ -1,132 +1,174 @@
-from django.db.models import Count, Avg, Q, Sum
+from django.db.models import Avg, Q
 from datetime import timedelta
 from django.utils import timezone
 from .models import Equipment, MaintenanceRequest, User
 import os
 import joblib
 
+
 class PMMetrics:
-    """Real Product Management Metrics Dashboard"""
-    
+    """Real Product Management Metrics Dashboard — ALL DYNAMIC"""
+
+    @staticmethod
+    def _load_latest_model_accuracy():
+        """
+        Load ML accuracy from the most recently SAVED model file.
+        Uses os.path.getmtime() sort — NOT alphabetical sort.
+
+        Old bug: sorted(files)[-1] gave 'model_xgboost_*' over
+        'model_gradient_boosting_*' because 'x' > 'g' alphabetically,
+        so a stale XGBoost pkl always loaded no matter which was newer.
+        The PM dashboard card showed a frozen 99.7% forever.
+        """
+        try:
+            model_dir = 'ml_models'
+            if not os.path.exists(model_dir):
+                return 0
+
+            pkl_files = [f for f in os.listdir(model_dir) if f.endswith('.pkl')]
+            if not pkl_files:
+                return 0
+
+            # Sort by actual file modification time — newest last
+            pkl_files.sort(
+                key=lambda f: os.path.getmtime(os.path.join(model_dir, f))
+            )
+            latest_path = os.path.join(model_dir, pkl_files[-1])
+            model_data = joblib.load(latest_path)
+            return model_data.get('r2', 0)
+        except Exception:
+            return 0
+
     @staticmethod
     def get_complete_metrics():
-        """Comprehensive PM dashboard - ALL DYNAMIC"""
+        """Comprehensive PM dashboard — all values computed live from DB."""
         now = timezone.now()
-        last_7d = now - timedelta(days=7)
+        last_7d  = now - timedelta(days=7)
         last_30d = now - timedelta(days=30)
-        last_90d = now - timedelta(days=90)
-        
-        # USER ENGAGEMENT
+
+        # ── USER ENGAGEMENT ──────────────────────────────────────────────────
         total_users = User.objects.filter(is_active=True).count()
         dau = User.objects.filter(last_login__gte=now - timedelta(days=1)).count()
         wau = User.objects.filter(last_login__gte=last_7d).count()
         mau = User.objects.filter(last_login__gte=last_30d).count()
         stickiness = (dau / mau * 100) if mau > 0 else 0
-        
-        # FEATURE ADOPTION
-        ml_active_users = MaintenanceRequest.objects.filter(
-            created_at__gte=last_30d
-        ).values('requested_by').distinct().count()
+
+        # ── FEATURE ADOPTION ─────────────────────────────────────────────────
+        ml_active_users = (
+            MaintenanceRequest.objects
+            .filter(created_at__gte=last_30d)
+            .values('requested_by')
+            .distinct()
+            .count()
+        )
         adoption_rate = (ml_active_users / total_users * 100) if total_users > 0 else 0
-        
-        # OPERATIONAL HEALTH
-        total_equipment = Equipment.objects.count()
-        operational = Equipment.objects.filter(status='operational').count()
+
+        # ── OPERATIONAL HEALTH ───────────────────────────────────────────────
+        total_equipment  = Equipment.objects.count()
+        operational      = Equipment.objects.filter(status='operational').count()
         maintenance_mode = Equipment.objects.filter(status='maintenance').count()
-        utilization = (operational / total_equipment * 100) if total_equipment > 0 else 0
-        
-        # MAINTENANCE EFFECTIVENESS
-        total_requests = MaintenanceRequest.objects.count()
-        completed = MaintenanceRequest.objects.filter(status='completed').count()
+        utilization      = (operational / total_equipment * 100) if total_equipment > 0 else 0
+
+        # ── MAINTENANCE EFFECTIVENESS ────────────────────────────────────────
+        total_requests  = MaintenanceRequest.objects.count()
+        completed       = MaintenanceRequest.objects.filter(status='completed').count()
         completion_rate = (completed / total_requests * 100) if total_requests > 0 else 0
-        
-        # REQUEST DISTRIBUTION
-        emergency = MaintenanceRequest.objects.filter(request_type='emergency').count()
+
+        emergency  = MaintenanceRequest.objects.filter(request_type='emergency').count()
         corrective = MaintenanceRequest.objects.filter(request_type='corrective').count()
         preventive = MaintenanceRequest.objects.filter(request_type='preventive').count()
-        
-        emergency_ratio = (emergency / total_requests * 100) if total_requests > 0 else 0
+
+        emergency_ratio  = (emergency  / total_requests * 100) if total_requests > 0 else 0
         preventive_ratio = (preventive / total_requests * 100) if total_requests > 0 else 0
-        
-        # BUSINESS IMPACT
-        avg_response_time = MaintenanceRequest.objects.filter(
-            status='completed',
-            created_at__gte=last_30d
-        ).aggregate(avg_hours=Avg('estimated_hours'))['avg_hours'] or 0
-        
-        # COST ANALYSIS
-        emergency_cost = emergency * 1500
+
+        # ── BUSINESS IMPACT ──────────────────────────────────────────────────
+        avg_response_time = (
+            MaintenanceRequest.objects
+            .filter(status='completed', created_at__gte=last_30d)
+            .aggregate(avg_hours=Avg('estimated_hours'))['avg_hours'] or 0
+        )
+
+        emergency_cost  = emergency  * 1500
         preventive_cost = preventive * 400
-        total_cost = emergency_cost + preventive_cost
-        
+        total_cost      = emergency_cost + preventive_cost
+
         prevented_emergencies = int(preventive * 0.6)
         cost_avoidance = prevented_emergencies * (1500 - 400)
         roi = (cost_avoidance / total_cost * 100) if total_cost > 0 else 0
-        
-        # ML PERFORMANCE - REAL FROM SAVED MODEL
+
+        # ── ML PERFORMANCE — reads live accuracy from newest .pkl ────────────
+        ml_accuracy    = PMMetrics._load_latest_model_accuracy()
         ml_predictions = Equipment.objects.count()
-        ml_accuracy = 0
-        
-        # Load ACTUAL model accuracy from saved model
-        try:
-            model_dir = 'ml_models'
-            if os.path.exists(model_dir):
-                model_files = [f for f in os.listdir(model_dir) if f.endswith('.pkl')]
-                if model_files:
-                    latest_model = sorted(model_files)[-1]
-                    model_path = os.path.join(model_dir, latest_model)
-                    model_data = joblib.load(model_path)
-                    ml_accuracy = model_data.get('r2', 0)
-        except:
-            ml_accuracy = 0
-        
+
+        # ── RETENTION ────────────────────────────────────────────────────────
+        inactive_users = User.objects.filter(
+            last_login__lt=last_30d, is_active=True
+        ).count()
+        churn_risk = (inactive_users / total_users * 100) if total_users > 0 else 0
+
         return {
             'user_engagement': {
-                'dau': dau,
-                'wau': wau,
-                'mau': mau,
-                'total_users': total_users,
-                'stickiness_pct': round(stickiness, 1),
-                'health_status': 'Excellent' if stickiness > 40 else 'Good' if stickiness > 20 else 'Needs Attention'
+                'dau':             dau,
+                'wau':             wau,
+                'mau':             mau,
+                'total_users':     total_users,
+                'stickiness_pct':  round(stickiness, 1),
+                'health_status': (
+                    'Excellent'       if stickiness > 40 else
+                    'Good'            if stickiness > 20 else
+                    'Needs Attention'
+                ),
             },
             'feature_adoption': {
-                'ml_active_users': ml_active_users,
-                'total_users': total_users,
+                'ml_active_users':   ml_active_users,
+                'total_users':       total_users,
                 'adoption_rate_pct': round(adoption_rate, 1),
-                'adoption_health': 'High' if adoption_rate > 60 else 'Medium' if adoption_rate > 30 else 'Low'
+                'adoption_health': (
+                    'High'   if adoption_rate > 60 else
+                    'Medium' if adoption_rate > 30 else
+                    'Low'
+                ),
             },
             'operational_health': {
-                'total_equipment': total_equipment,
-                'operational': operational,
+                'total_equipment':  total_equipment,
+                'operational':      operational,
                 'maintenance_mode': maintenance_mode,
-                'utilization_pct': round(utilization, 1),
-                'status': 'Healthy' if utilization > 80 else 'Fair' if utilization > 60 else 'Critical'
+                'utilization_pct':  round(utilization, 1),
+                'status': (
+                    'Healthy'  if utilization > 80 else
+                    'Fair'     if utilization > 60 else
+                    'Critical'
+                ),
             },
             'maintenance_effectiveness': {
-                'total_requests': total_requests,
-                'completed': completed,
-                'completion_rate_pct': round(completion_rate, 1),
-                'emergency_count': emergency,
-                'corrective_count': corrective,
-                'preventive_count': preventive,
-                'emergency_ratio_pct': round(emergency_ratio, 1),
-                'preventive_ratio_pct': round(preventive_ratio, 1)
+                'total_requests':       total_requests,
+                'completed':            completed,
+                'completion_rate_pct':  round(completion_rate, 1),
+                'emergency_count':      emergency,
+                'corrective_count':     corrective,
+                'preventive_count':     preventive,
+                'emergency_ratio_pct':  round(emergency_ratio, 1),
+                'preventive_ratio_pct': round(preventive_ratio, 1),
             },
             'business_impact': {
-                'avg_response_hours': round(avg_response_time, 1),
-                'total_cost_usd': total_cost,
-                'cost_avoidance_usd': cost_avoidance,
-                'roi_pct': round(roi, 1),
-                'prevented_emergencies': prevented_emergencies
+                'avg_response_hours':    round(avg_response_time, 1),
+                'total_cost_usd':        total_cost,
+                'cost_avoidance_usd':    cost_avoidance,
+                'roi_pct':               round(roi, 1),
+                'prevented_emergencies': prevented_emergencies,
             },
             'ml_performance': {
-                'total_predictions': ml_predictions,
+                'total_predictions':  ml_predictions,
                 'model_accuracy_pct': round(ml_accuracy * 100, 1),
-                'status': 'Production Ready' if ml_accuracy > 0.75 else 'Needs Training' if ml_accuracy > 0 else 'Not Trained'
+                'status': (
+                    'Production Ready' if ml_accuracy > 0.75 else
+                    'Needs Training'   if ml_accuracy > 0    else
+                    'Not Trained'
+                ),
             },
             'retention': {
-                'inactive_users': User.objects.filter(last_login__lt=last_30d, is_active=True).count(),
-                'churn_risk_pct': round((User.objects.filter(last_login__lt=last_30d, is_active=True).count() / total_users * 100) if total_users > 0 else 0, 1),
-                'health': 'Good'
-            }
+                'inactive_users': inactive_users,
+                'churn_risk_pct': round(churn_risk, 1),
+                'health':         'Good' if churn_risk < 20 else 'At Risk',
+            },
         }
