@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Prefetch
 from django.utils import timezone
 from datetime import timedelta
 
@@ -36,45 +36,51 @@ def dashboard(request):
 
 @login_required
 def ml_dashboard(request):
-    """Analytics Dashboard with REAL ML predictions"""
-    
-    ml_engine = RealMLEngine()
-    model_data = ml_engine.load_latest_model()
-    
+    """Analytics Dashboard — fast: 1 model load + 1 DB query for all records."""
+ 
+    ml_engine  = RealMLEngine()
+    model_data = ml_engine.load_latest_model()   # ← loaded ONCE here
+ 
     if not model_data:
-        context = {
-            'model_exists': False,
+        return render(request, 'maintenance/ml_dashboard.html', {
+            'model_exists':    False,
             'equipment_count': Equipment.objects.count(),
-        }
-        return render(request, 'maintenance/ml_dashboard.html', context)
-    
-    equipment_list = Equipment.objects.all()
+        })
+ 
+    # ── ONE query: all equipment + all their completed requests ──────────────
+    completed_requests = Prefetch(
+        'maintenance_requests',
+        queryset=MaintenanceRequest.objects.filter(
+            status='completed'
+        ).order_by('created_at'),
+        to_attr='completed_records',   # accessible as equipment.completed_records
+    )
+    equipment_qs = Equipment.objects.prefetch_related(completed_requests).all()
+ 
+    # ── Predict for each equipment (no disk reads, no extra DB queries) ──────
     predictions = []
-    
-    for eq in equipment_list:
-        pred = ml_engine.predict(eq)
+    for eq in equipment_qs:
+        records = eq.completed_records   # already fetched — list, sorted by created_at
+        pred = ml_engine.predict_with_model(eq, model_data, records)
         if pred:
-            predictions.append({
-                'equipment': eq,
-                'prediction': pred
-            })
-    
+            predictions.append({'equipment': eq, 'prediction': pred})
+ 
+    # Sort: most urgent (fewest days) first
     predictions.sort(key=lambda x: x['prediction']['days_until_maintenance'])
-    
+ 
     context = {
         'model_exists': True,
         'model_info': {
-            'model_name': f"Ensemble ({model_data.get('best_model', 'Unknown')})",
-            'r2': model_data.get('r2', 0) * 100,
-            'cv_r2': model_data.get('cv_r2', 0) * 100,
-            'mae': model_data.get('mae', 0),
+            'model_name':       f"Ensemble ({model_data.get('best_model', 'Unknown')})",
+            'r2':               model_data.get('r2', 0) * 100,
+            'cv_r2':            model_data.get('cv_r2', 0) * 100,
+            'mae':              model_data.get('mae', 0),
             'training_samples': model_data.get('training_samples', 0),
-            'trained_date': model_data.get('trained_date', 'Unknown')
+            'trained_date':     model_data.get('trained_date', 'Unknown'),
         },
-        'predictions': predictions[:20],
-        'total_equipment': equipment_list.count(),
+        'predictions':     predictions[:20],
+        'total_equipment': equipment_qs.count(),
     }
-    
     return render(request, 'maintenance/ml_dashboard.html', context)
 
 @login_required
